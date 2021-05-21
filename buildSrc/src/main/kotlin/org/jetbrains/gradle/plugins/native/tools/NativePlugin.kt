@@ -94,6 +94,7 @@ open class SourceSet(
         val initialSourceSet: SourceSet? = null,
         val rule: Pair<String, String>? = null
 ) {
+    val explicitDepeencies = mutableListOf<SourceSet>()
     var collection = sourceSets.project.objects.fileCollection() as FileCollection
     fun file(path: String) {
         collection = collection.plus(sourceSets.project.files("${initialDirectory.absolutePath}/$path"))
@@ -104,6 +105,8 @@ open class SourceSet(
             collection = collection.plus(sourceSets.project.files(it))
         }
     }
+
+    fun dependsOn(sourceSet: SourceSet) = explicitDepeencies.add(sourceSet)
 
     fun transform(suffixes: Pair<String, String>): SourceSet {
         return SourceSet(
@@ -128,7 +131,11 @@ open class SourceSet(
                     file(it.second)
                     sourceSets.project.file("${initialSourceSet.initialDirectory.path}/${it.first}") to sourceSets.project.file("${initialDirectory.path}/${it.second}")
                 }.map {
+                    val explicitDependenciesTasks = explicitDepeencies.flatMap { it.implicitTasks().asIterable() }
+
                     sourceSets.project.tasks.register<ToolExecutionTask>(it.second.name, ToolExecutionTask::class.java) {
+                        if (explicitDependenciesTasks.isNotEmpty())
+                            dependsOn(explicitDependenciesTasks)
                         val toolConfiguration = ToolPatternImpl(sourceSets.extension, it.second.path, it.first.path)
                         sourceSets.extension.toolPatterns[rule]!!.invoke(toolConfiguration)
                         toolConfiguration.configure(this, initialSourceSet.rule != null)
