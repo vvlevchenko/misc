@@ -1,0 +1,12 @@
+<idea-plugin>
+    <id>com.github.vvlevchenko.intellij.hello</id>
+    <name>Hello</name>
+    <vendor>minamoto</vendor>
+    <extensions defaultExtensionNs="com.intellij"/>
+    <actions>
+        <group id="Hello.HelloAction" text="HelloText" description="about Hello action">
+            <add-to-group group-id="MainMenu" anchor="last"/>
+            <action class="com.github.vvlevchenko.intellij.hello.HelloAction" id="Hello.Actions.HelloAction" text="Say Hello"/>
+        </group>
+    </actions>
+</idea-plugin>
